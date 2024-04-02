@@ -1,0 +1,237 @@
+# Environment
+
+# 0. Establish Environment
+
+# Install packages
+# Data import, tidying, manipulation, and data visualization
+install.packages("tidyverse")
+
+# Data manipulation, mutate(), select(), filter(), etc.
+install.packages("dplyr")
+
+# ‘ggplot2’ Based Publication Ready Plots
+install.packages("ggpubr")
+
+# studentized Breusch-Pagan test
+install.packages("lmtest")
+
+# grob table
+install.packages("ggplotify")
+
+# required for grid.arrange -- multiple plots
+install.packages("gridExtra")
+
+# required to compute residuals
+install.packages("modelr")
+
+
+
+# Load packages
+library(tidyverse)
+library(dplyr)
+library(ggpubr)
+library(lmtest)
+library(ggplotify)
+library(gridExtra)
+library(modelr)
+##############################################################################################
+# Create data frame 
+# VOEN_DF
+
+VOEN_DF = read.table("Ecoli_noisedata_full", sep = "\t", head=TRUE)
+##############################################################################################
+#-----------WIP---------------------------------------------------------------------------------------
+
+# Create modified data frame
+#VOEN_DF_dNdS <- VOEN_DF %>%
+#     mutate(dNdS_Calc = dN/dS)
+##############################################################################################
+# Create data frame 
+# VOEN_DF_PPI_STRING
+
+PPI_Detail_DF = read.table("511145.protein.physical.links.detailed.v12.0.txt", sep = " ", head=TRUE)
+
+# Parse fields to separate gene (ID) for protein1 and protein2
+PPI_Detail_DF$sprotein1 = substr(PPI_Detail_DF$protein1,8,13)
+PPI_Detail_DF$sprotein2 = substr(PPI_Detail_DF$protein2,8,13)
+
+## Option to filter data set
+PPI_Detail_DF_Count  <- PPI_Detail_DF
+
+# PPI_Detail_DF_Count  <- filter(PPI_Detail_DF, combined_score < 400)  %>% count()
+#PPI_Detail_DF_Count <- filter(PPI_Detail_DF, combined_score >=400) 
+
+#labelTag = "Note: Full Dataset; xlim: "
+
+
+##
+PPI_Detail_DF_Count <- filter(PPI_Detail_DF_Count, experimental >=400) 
+#labelTag = "Note: experimental >=400; xlim: "
+##
+#PPI_Detail_DF_Count <- filter(PPI_Detail_DF_Count, combined_score >=700) 
+#labelTag = "Note: combined_score >=700; xlim: "
+
+
+#PPI_Detail_DF_Count <- filter(PPI_Detail_DF, experimental >=600) 
+#PPI_Detail_DF_Count <- filter(PPI_Detail_DF, experimental >=700) 
+
+# Group by sprotein1 (substring of protein1) and perform counts
+# Rename columns in dataframe to match legacy files (e.g., columns ID, ppi)
+PPI_Detail_DF_Count <-PPI_Detail_DF_Count %>% group_by(sprotein1) %>% count() %>% 
+       rename("ppi" = "n")  %>% 
+       rename("ID" = "sprotein1")
+
+# Merge both data frames
+VOEN_DF_PPI_STRING = merge(x = VOEN_DF, y = PPI_Detail_DF_Count, by = "ID",
+                                 all.x = TRUE) %>% 
+       rename("ppi.LEGACY" = "ppi.x")  %>% 
+       rename("ppi.STRING" = "ppi.y")
+
+##############################################################################################
+# Create data frame 
+# Essential_All_DF_Extended_NA_to_Zero
+
+# mbo001183726st2 DataSet
+Essential_All_DF = read.csv("mbo001183726st2 DataSet.csv", sep = ",", head=TRUE)
+
+# Merge both data frames
+Essential_All_DF_Extended = merge(x = VOEN_DF, y = Essential_All_DF, by = "gene",
+                                 all.x = TRUE) 
+
+# Map Essential values to TRUE or FALSE
+Essential_All_DF_Extended_NA_to_Zero <- Essential_All_DF_Extended
+Essential_All_DF_Extended_NA_to_Zero$Essential <- ifelse(is.na(Essential_All_DF_Extended_NA_to_Zero$Essential) , FALSE, TRUE)
+
+#Essential_All_DF_Extended_NA_to_Zero$Essential_Level_Sig<- ifelse(Essential_All_DF_Extended_NA_to_Zero$condition) , FALSE, TRUE )
+
+# Used for facets, essentiality, expression noise, store strength of Pearson coefficient for brackets
+Essential_All_DF_Extended_NA_to_Zero<-Essential_All_DF_Extended_NA_to_Zero%>%mutate(Essential_Noise_Sig = case_when(
+  condition =="ciprofloxacin" ~ "NS",
+  condition =="glucose" ~ "**",
+  condition =="glycerol" ~ "NS",
+  condition =="lactose" ~ "NS",
+  condition =="NaCl" ~ "**",
+  condition =="stationary phase 16h" ~ "**",
+  condition =="stationary phase 30h" ~ "***",
+  condition =="synthetic rich" ~ "**"
+  ))
+
+
+# Used for facets, essentiality, expression level, store strength of Pearson coefficient for brackets
+Essential_All_DF_Extended_NA_to_Zero<-Essential_All_DF_Extended_NA_to_Zero%>%mutate(Essential_Level_Sig = case_when(
+  condition =="ciprofloxacin" ~ "***",
+  condition =="glucose" ~ "***",
+  condition =="glycerol" ~ "***",
+  condition =="lactose" ~ "***",
+  condition =="NaCl" ~ "***",
+  condition =="stationary phase 16h" ~ "***",
+  condition =="stationary phase 30h" ~ "***",
+  condition =="synthetic rich" ~ "***"
+  ))
+
+
+# Persist attribute to order categories
+# Data set: Essential_All_DF_Extended_NA_to_Zero; Attribute for Sort: Essential_Level_Cond
+Essential_All_DF_Extended_NA_to_Zero<-Essential_All_DF_Extended_NA_to_Zero%>%mutate(Essential_Level_Cond = case_when(
+  condition =="ciprofloxacin" ~ "h",
+  condition =="glucose" ~ "d",
+  condition =="glycerol" ~ "e",
+  condition =="lactose" ~ "f",
+  condition =="NaCl" ~ "g",
+  condition =="stationary phase 16h" ~ "b",
+  condition =="stationary phase 30h" ~ "c",
+  condition =="synthetic rich" ~ "a"
+  ))
+
+
+# Persist attribute to order categories
+# Data set: VOEN_DF_Cond; Attribute for Sort: Level_Noise_Cond
+VOEN_DF_Cond<-VOEN_DF%>%mutate(Level_Noise_Cond = case_when(
+  condition =="ciprofloxacin" ~ "h",
+  condition =="glucose" ~ "d",
+  condition =="glycerol" ~ "e",
+  condition =="lactose" ~ "f",
+  condition =="NaCl" ~ "g",
+  condition =="stationary phase 16h" ~ "b",
+  condition =="stationary phase 30h" ~ "c",
+  condition =="synthetic rich" ~ "a"
+  ))
+
+
+# Persist attribute to order categories
+# Data set: VOEN_DF_PPI_STRING_Cond; Attribute for Sort: PPI_Cond
+VOEN_DF_PPI_STRING_Cond<-VOEN_DF_PPI_STRING%>%mutate(PPI_Cond = case_when(
+  condition =="ciprofloxacin" ~ "h",
+  condition =="glucose" ~ "d",
+  condition =="glycerol" ~ "e",
+  condition =="lactose" ~ "f",
+  condition =="NaCl" ~ "g",
+  condition =="stationary phase 16h" ~ "b",
+  condition =="stationary phase 30h" ~ "c",
+  condition =="synthetic rich" ~ "a"
+  ))
+
+# These labels overwrite the sort attribute (e.g., "a", "b", "c", ...)
+new_labels <- c("a"="synthetic rich", "b"="stationary phase 16h" , "c"="stationary phase 30h" ,"d"="glucose" ,"e"="glycerol"  ,"f"="lactose" ,"g"="NaCl" ,"h"="ciprofloxacin") 
+
+
+# Sample call
+#plot2 <- modify_strip_colors(plot2)
+
+v_transparency = 0.20
+v_transparency1 = 0.35
+
+ v_yellow=adjustcolor( "yellow", alpha.f = v_transparency)
+ v_red=adjustcolor( "red1", alpha.f = v_transparency)
+ v_blue=adjustcolor( "lightsteelblue1", alpha.f = v_transparency1)
+
+
+# Function to set fill for facet strips
+modify_strip_colors <- function(p) {
+  # Convert ggplot object to grob table
+  g <- ggplot_gtable(ggplot_build(p))
+  
+  # Identify strip elements in the layout
+  strip <- which(grepl('strip-', g$layout$name))
+  
+  # Define fill colors
+  # Mapping of how the gtable reads the facets to map the colors.  
+    # This is the relevant mapping and means that the first element in  the color array is e (5).  The bottom left facet.
+    # After reading the bottom row, the array then is read for the top row.  Note that the numeric order (also facet order) is preserved when 
+    # the facets are read: left-to-right, bottom-to-top
+
+  #              e (5)     f (6)     g (7)   h (8)   a (1)     	      b (2)    		 c (3) 		    d (4)
+
+    #fills <- c("yellow", "yellow", "red1", "red1", "lightsteelblue1", "lightsteelblue1", "lightsteelblue1", "yellow")
+    fills <- c(v_yellow, v_yellow, v_red, v_red, v_blue, v_blue, v_blue, v_yellow)
+
+
+  # Initialize index
+  k <- 1
+  
+  # Loop through strip elements and modify fill colors
+  for (i in strip) {
+
+    #print("loop begin")
+    #print(paste("i: ",i))
+
+    # Find the index of the rectangle ('rect') in the children order of the strip element
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    #print(paste("j: ",j))
+
+    # Modify the fill color of the identified rectangle based on the fill color vector
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+    #print(paste("k: ",k))
+
+    # Increment the index to move to the next fill color
+    k <- k + 1
+    #print("loop end")
+  }
+  
+  # Convert the modified grob table back to ggplot object
+  modified_plot <- as.ggplot(g)
+  
+  # Return the modified ggplot object
+  return(modified_plot)
+}
+
