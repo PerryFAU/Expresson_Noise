@@ -5,7 +5,7 @@ The data sets consist of the following three (3) files:
 
 The code packages are identified below and organized in four (4) categories defining the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to explain each file and also provide specific technical details for successful execution.
 
-1. Data files
+Data files
    511145.protein.physical.links.detailed.v12.0.txt
    Ecoli_noisedata_full
    mbo001183726st2 DataSet.csv
