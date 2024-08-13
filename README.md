@@ -1,16 +1,13 @@
-The code packages consist of a set of scripts (Code_Plots_Final_Combined_Environment.txt) that build out the environment, 
-process the datasets, and builds necessary objects for use by the scripts (Code_Plots_Final_Combined.txt, Code_Plots_Supplemental.txt) to process the datasets and build the plots.
-
-The data sets consist of the following three (3) files:  
-
-The code packages are identified below and organized in four (4) categories that support the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to provide additional information about each file and also provide specific technical details for successful execution.
+The code packages are identified below and organized in four (4) categories that support the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to provide additional information about each file and also provide specific technical details for successful execution.  Please see the "Methods" section of our paper for additional details on referenced materials and applications of statistical methods.
 
 Data files
 1. 511145.protein.physical.links.detailed.v12.0.txt -
    This is a legacy data set that provides detailed information about protein-protein interactions for particular genes.  It is
    available for further studies but is not used in the below base figures and supplemental information.
-3. Ecoli_noisedata_full
-4. mbo001183726st2 DataSet.csv
+2. Ecoli_noisedata_full - The data set from the Urchuegu ́ıa et al. (2021) study.  This provides comprehensive information for the
+   measures in expression level, noise, regulatory inputs, essentiality, etc.
+3. mbo001183726st2 DataSet.csv - This data set was sourced from Dasmeh et al. (2017) and Goodall et al. (2018) studies and provides
+   information about gene essentiality.
 
 Environment
 1. Code_Plots_Final_Combined_Environment,v1.txt
