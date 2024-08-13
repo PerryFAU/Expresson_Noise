@@ -10,10 +10,10 @@ The code packages are identified below and organized in four (4) categories defi
    Ecoli_noisedata_full
    mbo001183726st2 DataSet.csv
    
-2. Environment
+3. Environment
    Code_Plots_Final_Combined_Environment,v1.txt
 
-3. Base Figures
+4. Base Figures
    Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot1_EN_EL.txt
    Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EL.txt
    Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EN.txt
@@ -22,7 +22,7 @@ The code packages are identified below and organized in four (4) categories defi
    Code_Plots_Permutation_Tests,spearman,v1.txt
    Code_Plots_Permutation_Tests,white_tests,v1.txt
 
-4. Supplemental Figures
+5. Supplemental Figures
    Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt
    Code_Plots_Supplemental,v1,Shapiro_Wilks_Test, Plot2.txt
    Code_Plots_Supplemental,v1,Wilcox_Test,Reg_Inputs_Essential Plot1.txt
