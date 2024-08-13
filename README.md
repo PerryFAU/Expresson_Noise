@@ -22,10 +22,11 @@ Base Figures
    the relationship of regulatory inputs to expression level.
 4. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EN.txt - Generates the Spearman correlation coefficients and White test statistics for the conditions in plot 2 (figure 2.)  The model is based upon
    the relationship of regulatory inputs to expression noise.
-5. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot3_Essential.txt
-6. Code_Plots_Final_Combined,v1.txt
-7. Code_Plots_Permutation_Tests,spearman,v1.txt
-8. Code_Plots_Permutation_Tests,white_tests,v1.txt
+5. Code_Plots_Final_Combined,v1,Wilcox Tests, Plot3_Essential.txt - Generates the Wilcox test statistics to compare the essential and nonessential boxplots.
+6. Code_Plots_Final_Combined,v1.txt - This files contains the three (3) scripts to generate figures 1, 2, and 3. Each of the individual plots should be run separately with the resulting image available in the
+   "Plots" region of the R console.
+8. Code_Plots_Permutation_Tests,spearman,v1.txt - 
+9. Code_Plots_Permutation_Tests,white_tests,v1.txt
 
 Supplemental Figures
 1. Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt
