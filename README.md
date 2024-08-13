@@ -3,7 +3,7 @@ process the datasets, and builds necessary objects for use by the scripts (Code_
 
 The data sets consist of the following three (3) files:  
 
-The code packages are identified below and organized in four (4) categories defining the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to explain each file and also provide specific technical details for successful execution.
+The code packages are identified below and organized in four (4) categories that support the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to provide additional information about each file and also provide specific technical details for successful execution.
 
 Data files
 1. 511145.protein.physical.links.detailed.v12.0.txt
