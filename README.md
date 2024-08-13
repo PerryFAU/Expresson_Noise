@@ -10,7 +10,10 @@ Data files
    information about gene essentiality.
 
 Environment
-1. Code_Plots_Final_Combined_Environment,v1.txt
+1. Code_Plots_Final_Combined_Environment,v1.txt - builds out the environment necessary to build both the base figures and
+   supplemental figures.  It begins by installation and loading of the the R packages necessary for the functionality needed by
+   follow-on code packages.  It loads the data files as data frames, processes the files to establish necessary attributes and builds
+   functions available for later use.
 
 Base Figures
 1. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot1_EN_EL.txt
