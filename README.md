@@ -7,6 +7,8 @@ The code packages are identified below and organized in four (4) categories that
 
 Data files
 1. 511145.protein.physical.links.detailed.v12.0.txt
+   This is a legacy data set that provides detailed information about protein-protein interactions for particular genes.  It is
+   available for further studies but is not used in the below base figures and supplemental information.
 2. Ecoli_noisedata_full
 3. mbo001183726st2 DataSet.csv
 
