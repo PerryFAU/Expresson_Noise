@@ -16,13 +16,16 @@ Environment
    functions available for later use.
 
 Base Figures
-1. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot1_EN_EL.txt
-2. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EL.txt
-3. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EN.txt
-4. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot3_Essential.txt
-5. Code_Plots_Final_Combined,v1.txt
-6. Code_Plots_Permutation_Tests,spearman,v1.txt
-7. Code_Plots_Permutation_Tests,white_tests,v1.txt
+1. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot1_EN_EL.txt - Generates the Spearman correlation coefficients and White test statistics for the conditions in plot 1 (figure 1.)  The model is based upon
+   the relationship of expression noise to expression level.
+3. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EL.txt - Generates the Spearman correlation coefficients and White test statistics for the conditions in plot 2 (figure 2.)  The model is based upon
+   the relationship of regulatory inputs to expression level.
+4. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EN.txt - Generates the Spearman correlation coefficients and White test statistics for the conditions in plot 2 (figure 2.)  The model is based upon
+   the relationship of regulatory inputs to expression noise.
+5. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot3_Essential.txt
+6. Code_Plots_Final_Combined,v1.txt
+7. Code_Plots_Permutation_Tests,spearman,v1.txt
+8. Code_Plots_Permutation_Tests,white_tests,v1.txt
 
 Supplemental Figures
 1. Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt
