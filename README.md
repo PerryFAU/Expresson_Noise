@@ -1,9 +1,9 @@
-The code packages consist of a set of scripts (Code_Plots_Final_Combined_Environment.txt) that builds out the environment, 
-processes the datasets and builds necessary objects for use by the scripts (Code_Plots_Final_Combined.txt, Code_Plots_Supplemental.txt) to process the datasets and build the plots.
+The code packages consist of a set of scripts (Code_Plots_Final_Combined_Environment.txt) that build out the environment, 
+process the datasets, and builds necessary objects for use by the scripts (Code_Plots_Final_Combined.txt, Code_Plots_Supplemental.txt) to process the datasets and build the plots.
 
 The data sets consist of the following three (3) files:  
 
-The code packages are identified below and organized in four (4) categories defining the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  Notes are provided below to explain each file and also provide specific technical details for successful execution.
+The code packages are identified below and organized in four (4) categories defining the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to explain each file and also provide specific technical details for successful execution.
 
 1. Data files
    511145.protein.physical.links.detailed.v12.0.txt
