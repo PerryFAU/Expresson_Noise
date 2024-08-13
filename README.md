@@ -6,11 +6,11 @@ The data sets consist of the following three (3) files:
 The code packages are identified below and organized in four (4) categories that support the processing order in R.  The data files must be loaded into the R environment first followed by running the file to generate the environment.  Afterward, the files that create the base or supplemental figures can be run in either order.  I've included notes below to provide additional information about each file and also provide specific technical details for successful execution.
 
 Data files
-1. 511145.protein.physical.links.detailed.v12.0.txt
+1. 511145.protein.physical.links.detailed.v12.0.txt -
    This is a legacy data set that provides detailed information about protein-protein interactions for particular genes.  It is
    available for further studies but is not used in the below base figures and supplemental information.
-2. Ecoli_noisedata_full
-3. mbo001183726st2 DataSet.csv
+3. Ecoli_noisedata_full
+4. mbo001183726st2 DataSet.csv
 
 Environment
 1. Code_Plots_Final_Combined_Environment,v1.txt
