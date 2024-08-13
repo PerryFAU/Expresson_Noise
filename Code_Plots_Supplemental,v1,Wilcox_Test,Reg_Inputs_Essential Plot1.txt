@@ -1,0 +1,22 @@
+
+  wilcox.test(reg_inputs~ Essential, data = Essential_All_DF_Extended_NA_to_Zero, exact = FALSE)
+
+
+  strselect_log="Model: reg_inputs ~ Essential, data = Essential_All_DF_Extended_NA_to_Zero;"
+
+
+
+cat(strselect_log,"\n","\n","PlotS1_Essential_RI - Wilcox Tests","\n","\n")
+
+
+
+
+
+
+#	Wilcoxon rank sum test with continuity correction
+
+#data:  log10(reg_inputs + 1) by Essential
+#W = 457440, p-value = 6.76e-05
+#alternative hypothesis: true location shift is not equal to 0
+
+

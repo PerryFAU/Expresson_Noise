@@ -1,0 +1,361 @@
+
+setwd("/cloud/project/Files")
+
+options(digits = 15)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Define conditions
+#conditions <- c("ciprofloxacin", "glycerol", "glucose", "lactose", "NaCl", "stationary phase 16h", "stationary phase 30h", "synthetic rich")
+
+# Define conditions
+conditions <- c("synthetic rich", "stationary phase 16h", "stationary phase 30h",  
+		"glucose", "glycerol", "lactose", "NaCl", "ciprofloxacin")
+
+sequence <- c(1,2,3,4,5,6,7,8)
+
+condition_seq<- data.frame(conditions,sequence)
+
+
+# Initialize an empty dataframe to store the results
+results_df <- data.frame(
+  Condition1 = character(),
+  Condition2 = character(),
+  Pvalue = numeric(),
+  Adj_Pvalue = numeric(),
+  Condition1Seq = numeric(),
+  Condition2Seq = numeric(),
+  stringsAsFactors = FALSE
+)
+
+
+# Function to return sequence
+returnSequence <- function(condition,condition_seq) {
+
+condition_seqTemp<-   condition_seq
+
+  condition_seq <-  filter(condition_seq, conditions == condition)
+
+
+
+  return(condition_seq$sequence)
+}
+
+returnFinal_DF <- function(results_df) {
+
+#resultsTemp_df <- results_df
+resultsTemp_Final_df <- results_df
+resultsTemp_Final_df<-resultsTemp_Final_df[0,]
+
+# Loop over each combination of conditions
+for (i in 1:(length(conditions) )) {
+    condition1 <- conditions[i]
+
+
+  #resultsTemp_df_filtered <-  filter(resultsTemp_df, Condition1 == conditions[i])
+  resultsTemp_df_filtered <-  filter(results_df, Condition1 == conditions[i])
+  resultsTemp_df_filtered <-  arrange(resultsTemp_df_filtered,Condition1Seq,Condition2Seq)
+
+  resultsTemp_df_filtered$Adj_Pvalue=p.adjust(unlist(resultsTemp_df_filtered$Pvalue),method="bonferroni")
+
+  resultsTemp_Final_df<-rbind ( resultsTemp_Final_df, resultsTemp_df_filtered)
+
+  #print(resultsTemp_df_filtered[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+  #print(resultsTemp_Final_df[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+
+  }
+  return(resultsTemp_Final_df)
+}
+
+
+################################################################################################################################
+################################################################################################################################
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+# Function to perform the White test
+#white_test <- function(model) {
+#  #bptest(model, ~ fitted(model) + I(fitted(model)^2), studentize=FALSE)
+#  whitestrap::white_test(model)
+#}
+
+# Function to run permutation tests and return the result using the White test for heteroscedasticity
+runPermutation_Tests_EL_EN <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests_White_Plot_1_EL_EN"
+  cat("Running Test:", testName, "\n")
+
+  # Set the number of permutations
+  nperm <- 10000
+
+  # Set a vector for the differences of test statistics
+  test.dif <- numeric(nperm)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+
+    # Perform the White test on the first condition
+    model1 <- lm(log10(expression_noise) ~ expression_level, data = cond1)
+    #white_test1 <- white_test(model1)$statistic
+    white_test1 <- white_test(model1)$w_stat
+
+    # Perform the White test on the second condition
+    model2 <- lm(log10(expression_noise) ~ expression_level, data = cond2)
+    #white_test2 <- white_test(model2)$statistic
+    white_test2 <- white_test(model2)$w_stat
+
+    # Store the difference of test statistics
+    test.dif[i] <- abs(white_test1 - white_test2)
+  }
+
+  # Perform the empirical White test for both conditions
+  model_emp1 <- lm(log10(expression_noise) ~ expression_level, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition1, ])
+  #white_test_emp1 <- whitestrap::white_test(model_emp1)$statistic
+  white_test_emp1 <- whitestrap::white_test(model_emp1)$w_stat
+
+  model_emp2 <- lm(log10(expression_noise) ~ expression_level, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition2, ])
+  #white_test_emp2 <- whitestrap::white_test(model_emp2)$statistic
+  white_test_emp2 <- whitestrap::white_test(model_emp2)$w_stat
+
+  emp.test.dif <- abs(white_test_emp1 - white_test_emp2)
+
+  cat("Running [EL-EN] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+  # Compute the Monte Carlo approximation of the permutation p-value
+  #result <- 2 * min(mean(test.dif > emp.test.dif), mean(test.dif < emp.test.dif))
+  result <- mean(test.dif > emp.test.dif)
+
+  #cat("p_value for conditions:", condition1, "and", condition2,";p-value: ",result, "\n")
+
+#========================================================================================
+  #png("foobar.png",1200,800)
+  file_name =  paste("Plot1, Exp_Level-Exp_Noise, White_Test - ", condition1, " and ",condition2,".jpeg")
+
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot1, Exp_Level-Exp_Noise, White_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(test.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.test.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+
+
+  return(result)
+}
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Similarly update the other two functions
+
+runPermutation_Tests_RI_EL <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests__White_Plot_2_RI_EL"
+  cat("Running Test:", testName, "\n")
+
+  # Set the number of permutations
+  nperm <- 10000
+
+  # Set a vector for the differences of test statistics
+  test.dif <- numeric(nperm)
+
+  VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF, reg_inputs != 0)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF_TEMP_NoOnes, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+
+    # Perform the White test on the first condition
+    model1 <- lm(expression_level ~ reg_inputs, data = cond1)
+    #white_test1 <- white_test(model1)$statistic
+    white_test1 <- white_test(model1)$w_stat
+
+    # Perform the White test on the second condition
+    model2 <- lm(expression_level ~ reg_inputs, data = cond2)
+    #white_test2 <- white_test(model2)$statistic
+    white_test2 <- white_test(model2)$w_stat
+
+    # Store the difference of test statistics
+    test.dif[i] <- abs(white_test1 - white_test2)
+  }
+
+  # Perform the empirical White test for both conditions
+  model_emp1 <- lm(expression_level ~ reg_inputs, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition1, ])
+  #white_test_emp1 <- white_test(model_emp1)$statistic
+  white_test_emp1 <- white_test(model_emp1)$w_stat
+
+  model_emp2 <- lm(expression_level ~ reg_inputs, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition2, ])
+  #white_test_emp2 <- white_test(model_emp2)$statistic
+  white_test_emp2 <- white_test(model_emp2)$w_stat
+
+  emp.test.dif <- abs(white_test_emp1 - white_test_emp2)
+
+  cat("Running [RI-EL] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+  # Compute the Monte Carlo approximation of the permutation p-value
+  #result <- 2 * min(mean(test.dif > emp.test.dif), mean(test.dif < emp.test.dif))
+  result <- mean(test.dif > emp.test.dif)
+
+#========================================================================================
+  #png("foobar.png",1200,800)
+  file_name =  paste("Plot2, Reg_Input-Exp_Level, White_Test - ", condition1, " and ",condition2,".jpeg")
+
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot2, Reg_Input-Exp_Level, White_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(test.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.test.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+
+  return(result)
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+
+runPermutation_Tests_RI_EN <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests_White_Plot_2_RI_EN"
+  cat("Running Test:", testName, "\n")
+
+  # Set the number of permutations
+  nperm <- 10000
+
+  # Set a vector for the differences of test statistics
+  test.dif <- numeric(nperm)
+
+  VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF, reg_inputs != 0)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF_TEMP_NoOnes, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+
+    # Perform the White test on the first condition
+    model1 <- lm(log10(expression_noise) ~ reg_inputs, data = cond1)
+    #white_test1 <- white_test(model1)$statistic
+    white_test1 <- white_test(model1)$w_stat
+
+    # Perform the White test on the second condition
+    model2 <- lm(log10(expression_noise) ~ reg_inputs, data = cond2)
+    #white_test2 <- white_test(model2)$statistic
+    white_test2 <- white_test(model2)$w_stat
+
+    # Store the difference of test statistics
+    test.dif[i] <- abs(white_test1 - white_test2)
+  }
+
+  # Perform the empirical White test for both conditions
+  model_emp1 <- lm(log10(expression_noise) ~ reg_inputs, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition1, ])
+  #white_test_emp1 <- white_test(model_emp1)$statistic
+  white_test_emp1 <- white_test(model_emp1)$w_stat
+
+  model_emp2 <- lm(log10(expression_noise) ~ reg_inputs, 
+                   data = VOEN_DF_filtered[VOEN_DF_filtered$condition == condition2, ])
+  #white_test_emp2 <- white_test(model_emp2)$statistic
+  white_test_emp2 <- white_test(model_emp2)$w_stat
+
+  emp.test.dif <- abs(white_test_emp1 - white_test_emp2)
+
+  cat("Running [RI-EN] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+  # Compute the Monte Carlo approximation of the permutation p-value
+  #result <- 2 * min(mean(test.dif > emp.test.dif), mean(test.dif < emp.test.dif))
+  result <- mean(test.dif > emp.test.dif)
+
+#========================================================================================
+  #png("foobar.png",1200,800)
+  file_name =  paste("Plot2, Reg_Input-Exp_Noise, White_Test - ", condition1, " and ",condition2,".jpeg")
+
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot2, Reg_Input-Exp_Noise, White_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(test.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.test.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+
+  return(result)
+}
+
+
+# Loop over each combination of conditions
+for (i in 1:(length(conditions) - 1)) {
+  for (j in (i + 1):length(conditions)) {
+    condition1 <- conditions[i]
+    condition2 <- conditions[j]
+
+    result <- runPermutation_Tests_EL_EN(condition1, condition2)
+    #result <- runPermutation_Tests_RI_EL(condition1, condition2)
+    #result <- runPermutation_Tests_RI_EN(condition1, condition2)
+
+    # Add the result to the dataframe
+    results_df <- rbind(results_df, data.frame(Condition1 = condition1, Condition2 = condition2, Pvalue = result, Condition1Seq = returnSequence(condition1,condition_seq), Condition2Seq = returnSequence(condition2,condition_seq)))
+
+    results_df <- rbind(results_df, data.frame(Condition1 = condition2, Condition2 = condition1, Pvalue = result, Condition1Seq = returnSequence(condition2,condition_seq), Condition2Seq = returnSequence(condition1,condition_seq)))
+
+  }
+}
+
+
+# Adjust p-values for multiple tests
+#results_df$Adj_Pvalue=p.adjust(unlist(results_df$Pvalue),method="bonferroni")
+#results_df$Adj_Pvalue=p.adjust(unlist(results_df$Pvalue),method="Hochberg")
+#results_df$Adj_Pvalue=p.adjust(unlist(results_df$Pvalue),method="BH")
+#results_df$Adj_Pvalue=p.adjust(unlist(results_df$Pvalue),method="holm")
+
+
+# Print the results dataframe
+#print(results_df)
+
+resultsTemp_Final_df <- returnFinal_DF(results_df)
+
+print(resultsTemp_Final_df[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+
+
+setwd("/cloud/project")

@@ -1,0 +1,497 @@
+# Figure 1
+################################# Expression Noise vs Expression Level #################################
+########################################################################################################
+# Combined code 7, 8
+# Data: VOEN_DF
+
+# Labels to add italics to "LM", White tests 
+rWT_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("LM","LM","LM","LM","LM","LM","LM","LM"))
+
+# Labels for White test
+WT_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 26.97***","= 0.40","= 21.50***","= 3.58","= 0.74","= 6.10","= 3.72","= 2.45"))
+
+# Labels to add italics to "r",  Pearson tests 
+rR_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("ρ","ρ","ρ","ρ","ρ","ρ","ρ","ρ"))
+
+# Labels for coefficient tests (Spearman)
+R_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c(" = 0.25***", " = 0.09*", " = 0.32***", " = 0.13***", " = 0.05", " = 0.03", " = 0.20***", " = 0.05"))
+
+#--------------------------------------------------------------------------------------------------
+# plot_comb_7_8_[1]log10_expression_level_log10_expression_noise__[2]facet_wrap_conditions
+# Data set: VOEN_DF_Cond; Attribute for Sort: Level_Noise_Cond
+# Overall plot	
+plot1<-ggplot(data = VOEN_DF_Cond, mapping = aes(x = expression_level, y = log10(expression_noise)), na.rm = TRUE) +
+
+	# Scatter plot
+	geom_point(color = 'black') +
+
+	# x and y axis labels
+	xlab("expression level") + 
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+	# Print out Spearman statistics
+	annotate("text", x=9.7,  y=0.398, cex=4.0, label= "ρ", hjust = 0, fontface="italic") +
+  	annotate("text", x=9.85,  y=0.398, cex=4.0, label= " = 0.16***",hjust = 0) +
+
+	# White Test
+	annotate("text", x=9.7,  y=0.26, cex=4.0, label= "LM", hjust = 0, fontface="italic") +
+ 	annotate("text", x=10.05,  y=0.26, cex=4.0, label= "= 16.15***",hjust = 0) +
+
+	# Establish plot limits
+	ylim(-4, 0.5) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+ 
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Plot reference
+	labs(tag = "A")		
+
+
+# Faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot2<-ggplot(data = VOEN_DF_Cond,mapping = aes(x = expression_level, y = log10(expression_noise)), na.rm = TRUE) +
+	geom_point(color = 'black') +
+
+	# x and y axis labels
+	xlab("expression level") + 
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+	# For log-transformed axes, the x and y coordinates are equal to the exponents of the appropriate base
+	# Print out Spearman statistics
+  	geom_text(x = 8.1, y = 0.358, cex=2.5, aes(label = label), data =  rR_ELevel_labels,hjust = 0, fontface="italic") +
+   	geom_text(x = 8.5, y = 0.358, cex=2.5, aes(label = label), data =  R_ELevel_labels,hjust = 0) +
+ 	
+	# White Test
+  	geom_text(x = 8.1, y = 0.185, cex=2.5, aes(label = label), data = rWT_ELevel_labels,hjust = 0, fontface="italic") +
+  	geom_text(x = 9.0, y = 0.185, cex=2.5, aes(label = label), data = WT_ELevel_labels,hjust = 0) +
+
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller(Level_Noise_Cond=c(new_labels ))) +
+
+	# Establish plot limits
+	ylim(-4, 0.5) +
+
+
+	# Set overall default theme
+	theme_bw() +
+ 
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 8.0), strip.background = element_rect(fill = NA, color = "black")) +
+
+	# Plot label
+	labs(tag = "B")	
+
+	# Function to fill facet strip labels
+	plot2 <- modify_strip_colors(plot2)
+
+# Include plots in a single grid
+grid.arrange(plot1, plot2, ncol=2)
+########################################################################################################
+
+
+
+# Figure 2
+########################################### Regulatory Inputs ##########################################
+########################################################################################################
+# Combined codes 9, 10
+# Data: VOEN_DF
+
+# A data frame with labels for each facet
+
+## Expression_Level
+
+# Labels for coefficient tests (Spearman)
+# Labels to add italics to "r", coefficient tests  (Spearman) - Note used for both expression level and expression noise
+rR_ELevel_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("ρ","ρ","ρ","ρ","ρ","ρ","ρ","ρ"))
+
+R_ELevel_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c(" = 0.02", " = 0.06", " = 0.07", " = 0.05"," = 0.04"," = 0.10"," = 0.11*"," = -1e-03"))
+
+# Labels for White Tests
+# Labels to add italics to "r", concatentate White tests  - Note used for both expression level and expression noise
+rWT_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("LM","LM","LM","LM","LM","LM","LM","LM"))
+
+WT_ELevel_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.44","= 0.11","= 1.94","= 1.50","= 4.61","= 4.12","= 4.83","=1.25"))
+
+
+## Expression_Noise
+# Labels for correlation coefficient tests (Spearman)
+R_ENoise_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c(" = 0.15**"," = 0.15**"," = 0.13*"," = 0.15**"," = 0.18**"," = 0.22***"," = 0.24***"," = 0.22***"))
+
+# Labels for WT test
+WT_ENoise_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.37","= 0.78","= 0.95","= 2.31","= 35.07***","= 0.56","=1.61","= 0.20"))
+
+# Labels to print out " >10" at bottom of chart
+bottom_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), 
+	label = c(" >10",""," >10"," >10"," >10","","",""))
+
+#--------------------------------------------------------------------------------------------------
+# Create a temporary data frame 
+VOEN_DF_TEMP <- VOEN_DF_Cond
+# Data set: VOEN_DF_Cond; Attribute for Sort: Level_Noise_Cond
+
+# Move all points > 10 to position 11 and note below with labels
+VOEN_DF_TEMP$reg_inputs[VOEN_DF_TEMP$reg_inputs > 10] <- 11
+
+VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF_TEMP, reg_inputs != 0)
+
+# Filter out outliers to make consistent with Figure 1
+VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF_TEMP, expression_noise > 0.0001)
+
+#--------------------------------------------------------------------------------------------------
+# plot_comb_9_10_[1]log10_expression_level_reg_inputs__[2]log10_expression_noise__reg_inputsf_wrap_cond
+
+# Overall plot, expression level
+plot1<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = expression_level), na.rm = TRUE) +
+
+	geom_point(color = 'black') +
+
+	# x and y axis labels
+	xlab(expression(~"number of regulatory inputs")) + 
+	ylab(expression(~"expression level")) +
+
+	# Print out Spearman and White Test statistics
+	annotate("text", x=9,  y=11.9, cex=3.0, label= "ρ",hjust = 0, fontface="italic") +
+	annotate("text", x=9.2,  y=11.9, cex=3.0, label= " = 0.06**",hjust = 0) +
+
+	annotate("text", x=9,  y=11.5, cex=3.0, label= "LM",hjust = 0, fontface="italic") +
+	annotate("text", x=9.52,  y=11.5, cex=3.0, label= "= 9.32**",hjust = 0) +
+
+
+	# Print out note that the points have been moved and are "> 10"
+	annotate("text", x = 11, y = 4.95, label = "> 10",size = 3) +   
+	# Necessary to print below axes
+	coord_cartesian(ylim = c(5.5, 12), clip = "off") +
+
+	# Establish plot limits, x-axis not log-transformed, so set limits here
+	xlim(1,11) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) +
+	
+	# Plot reference
+	labs(tag = "A")	
+
+
+# Overall plot, expression noise
+plot2<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_noise)), na.rm = TRUE) + 
+
+	geom_point(color = 'black') +
+	# x and y axis labels
+	xlab(expression(~"number of regulatory inputs")) + 
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+
+	# Print out Spearman and White Test statistics
+	annotate("text", x=9,  y=0.5, cex=3.0, label= "ρ",hjust = 0, fontface="italic") +
+	annotate("text", x=9.2,  y=0.5, cex=3.0, label= " = 0.17***",hjust = 0) +
+
+	annotate("text", x=9,  y=0.25, cex=3.0, label= "LM",hjust = 0, fontface="italic") +
+	annotate("text", x=9.51,  y=0.25, cex=3.0, label= "= 3.84",hjust = 0) +
+
+
+	# Print out note that the points have been moved and are "> 10"
+	annotate("text", x = 11, y = -4.40, label = "> 10",size = 3) +   
+	# Necessary to print below axes
+	coord_cartesian(ylim = c( -4, 0.6), clip = "off") +
+
+	# Establish plot limits
+	xlim(1,11) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) +
+
+	# Plot reference
+	labs(tag = "B")	
+
+
+# Expression level, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot3<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = expression_level), na.rm = TRUE) +
+
+	geom_point(color = 'black') +
+
+	# x and y axis labels
+	xlab(expression(~"number of regulatory inputs")) + 
+	ylab(expression(~"expression level")) +
+
+	# Print out Spearman and White Test statistics
+	geom_text(x=6.35,  y=11.95, cex=2.0, aes(label = label), data = rR_ELevel_RInput_labels,hjust = 0, fontface="italic") +
+	geom_text( x=7.03,  y=11.95, cex=2.0, aes(label = label), data = R_ELevel_RInput_labels,hjust = 0, fontface="plain") +
+
+	geom_text(x=6.35,  y=11.45, cex=2.0, aes(label = label), data = rWT_ELevel_labels,hjust = 0, fontface="italic") +
+	geom_text(x=7.83,  y=11.45, cex=2.0, aes(label = label), data = WT_ELevel_RInput_labels,hjust = 0, fontface="plain") +
+
+	# Establish plot limits
+	xlim(1,11) +
+
+	# Print out "> 10" label at the bottom of the faceted plots.  Note that bottom_labels vector only has values for bottom layer
+	geom_text(size=3,x = 9.6, y = 4.62, cex=2.0, aes(label = label), data = bottom_labels, hjust = 0) +
+	# Necessary to print below axes  
+	coord_cartesian(ylim = c(5.5, 12), clip = "off") +
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller(Level_Noise_Cond=c(new_labels ))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	scale_x_continuous(breaks = c(1,3,5,7,9)) +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 7.0), strip.background = element_rect(fill = NA, color = "black")) +
+
+	# Plat label
+	labs(tag = "C")	
+
+	# Function to fill facet strip labels
+	plot3 <- modify_strip_colors(plot3)
+
+# Expression noise, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot4<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_noise)), na.rm = TRUE) +
+
+	geom_point(color = 'black') +
+
+	# x and y axis labels
+	xlab(expression(~"number of regulatory inputs")) + 
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+	# Set plot limits
+	xlim(1,11) +
+
+	# Print out Spearman and White Test statistics
+	geom_text(x = 5.25, y = 0.60, cex=2.0, aes(label = label), data = rR_ELevel_RInput_labels,hjust = 0, fontface="italic") +
+	geom_text(x = 5.88, y = 0.60, cex=2.0, aes(label = label), data = R_ENoise_RInput_labels,hjust = 0, fontface="plain") +
+	
+	geom_text(x = 5.25, y = 0.25, cex=2.0, aes(label = label), data = rWT_ELevel_labels,hjust = 0, fontface="italic") +
+	geom_text(x = 6.81, y = 0.25, cex=2.0, aes(label = label), data = WT_ENoise_RInput_labels,hjust = 0, fontface="plain") +
+
+	# Print out "> 10" label at the bottom of the faceted plots.  Note that bottom_labels vector only has values for bottom layer
+	geom_text(size=3,x = 9.6, y = -4.62, cex=2.0, aes(label = label), data = bottom_labels,hjust = 0) +
+	# Necessary to print below axes  
+	coord_cartesian(ylim = c( -4,0.7), clip = "off") +
+
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller( Level_Noise_Cond=c(new_labels ))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	scale_x_continuous(breaks = c(1,3,5,7,9)) +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 7.0), strip.background = element_rect(fill = NA, color = "black")) +
+
+	# Plot label
+	labs(tag = "D")	
+
+	# Function to fill facet strip labels
+	plot4 <- modify_strip_colors(plot4)
+
+
+# Include plots in a single grid
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
+
+########################################################################################################
+
+
+
+
+# Figure 3
+############################################## Essentiality ############################################
+########################################################################################################
+# plot_comb_19_20_[1]expression_level_Essential__[2]expression_noise_Essentialf_wrap_cond
+
+# Combined code 29, 30
+# Data: Essential_All_DF_Extended_NA_to_Zero
+# Data set: Essential_All_DF_Extended_NA_to_Zero; Attribute for Sort: Essential_Level_Cond
+
+# Variables to persist boxplot fill colors
+level_Color =adjustcolor( "cornflowerblue", alpha.f = 0.3)
+noise_color = adjustcolor( "firebrick1", alpha.f = 0.3)
+
+# Overall plot, expression level
+plot1<-ggplot(data = Essential_All_DF_Extended_NA_to_Zero,mapping = aes(x =  Essential, y = expression_level,  fill = Essential, na.rm=FALSE, show.legend = FALSE))+
+	geom_boxplot(notch=TRUE,  aes(group=Essential),outlier.shape = NA)+
+
+	# x and y axis labels
+	scale_x_discrete(labels = c("N","E"), breaks = c("FALSE","TRUE")) + labs(x = NULL) +
+	scale_fill_manual(values=c(level_Color, noise_color)) +
+
+	ylab(expression(~"expression level")) +
+
+	# Print brackets between the boxplots
+	# The y.poition value is equal to the exponent (10^x) when the axes is log-transformed
+	geom_bracket(data = Essential_All_DF_Extended_NA_to_Zero,xmin = "FALSE", xmax ="TRUE", y.position = 10.85, 
+		label = "***", tip.length = 0.02, color = "black") +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+ 
+	# Remove gridlines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Remove legends
+	theme(legend.position = "none") +
+
+	# The limits for the scale_y_continuous function is equal to that position on the log_transfored axis.  Therefore, it must be represented as 10^x
+	scale_y_continuous(breaks = c(6,8,10), limits = c(6,11.5)) +
+
+	# Plot reference
+	labs(tag = "A")	
+
+
+# Overall plot, expression noise
+plot2<-ggplot(data = Essential_All_DF_Extended_NA_to_Zero,mapping = aes(x =  Essential, y = log10(expression_noise),  fill = Essential, na.rm=FALSE))+
+
+	geom_boxplot(notch=TRUE,  aes(group=Essential),outlier.shape = NA) +
+
+	# x and y axis labels
+	scale_x_discrete(labels = c("N","E"), breaks = c("FALSE","TRUE")) + labs(x = NULL) +
+	scale_fill_manual(values=c(level_Color, noise_color)) +
+
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+	# Print brackets between the boxplots
+	geom_bracket(data = Essential_All_DF_Extended_NA_to_Zero,xmin = "FALSE", xmax ="TRUE", y.position = -0.08	, 
+		label ="***", tip.length = 0.01, color = "black") +
+
+	# Set overall plot them to black and white
+	theme_bw()+ 
+
+ 	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Remove legends
+	theme(legend.position = "none") +
+
+	# The limits for the scale_y_continuous function is equal to that position on the log_transfored axis.  Therefore, it must be represented as 10^x
+	scale_y_continuous(limits = c(-2.5,0.3)) +
+
+	# Plot reference
+	labs(tag = "B")	
+
+
+# Expression level, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot3<-ggplot(data = Essential_All_DF_Extended_NA_to_Zero,mapping = aes(x =  Essential, y = expression_level,  fill = Essential, na.rm=FALSE))+
+
+	geom_boxplot(notch=TRUE,  aes(group=Essential),outlier.shape = NA)+
+
+
+	# x and y axis labels
+	scale_x_discrete(labels = c("N","E"), breaks = c("FALSE","TRUE")) + labs(x = NULL) +
+	scale_fill_manual(values=c(level_Color, noise_color)) +
+
+	ylab(expression(~"expression level")) +
+
+	# Print brackets between the boxplots
+	geom_bracket(data = Essential_All_DF_Extended_NA_to_Zero,xmin = "FALSE", xmax ="TRUE", y.position = 11.3, 
+		label = Essential_All_DF_Extended_NA_to_Zero$Essential_Level_Sig, tip.length = 0.02, color = "black",label.size = 3) +
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Essential_Level_Cond, nrow = 2,labeller = labeller(Essential_Level_Cond=c(new_labels))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+  	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Remove legends
+	theme(legend.position = "none") +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 8.0), strip.background = element_rect(fill = NA, color = "black")) +
+
+	# The limits for the scale_y_continuous function is equal to that position on the log_transfored axis.  Therefore, it must be represented as 10^x
+	scale_y_continuous(breaks = c(6,8,10,12), limits = c(6,12)) +
+
+
+	# Plot label
+	labs(tag = "C")
+
+	# Function to fill facet strip labels	
+	plot3 <- modify_strip_colors(plot3)
+
+
+# Expression noise, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot4<-ggplot(data = Essential_All_DF_Extended_NA_to_Zero,mapping = aes(x =  Essential, y = log10(expression_noise),  fill = Essential, na.rm=FALSE))+
+
+	geom_boxplot(notch=TRUE,  aes(group=Essential),outlier.shape = NA, show.legend = FALSE) +
+
+	# x and y axis labels
+	scale_x_discrete(labels = c("N","E"), breaks = c("FALSE","TRUE")) + labs(x = NULL) +
+	scale_fill_manual(values=c(level_Color, noise_color)) +
+
+	ylab(expression(~log[10]~"(expression noise)")) +
+
+
+	# Print brackets between the boxplots
+	geom_bracket(data = Essential_All_DF_Extended_NA_to_Zero,xmin = "FALSE", xmax ="TRUE", y.position = 0.28, 
+		label =Essential_All_DF_Extended_NA_to_Zero$Essential_Noise_Sig, tip.length = 0.01, color = "black",label.size = 3, vjust = -0.3,) +
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Essential_Level_Cond, nrow = 2,labeller = labeller( Essential_Level_Cond=c(new_labels  ))) +
+
+	# Set overall default theme
+	theme_bw()+ 
+
+  	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Remove legends
+	theme(legend.position = "none") +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 8.0), strip.background = element_rect(fill = NA, color = "black")) +
+                         
+	# The limits for the scale_y_continuous function is equal to that position on the log_transfored axis.  Therefore, it must be represented as 10^x
+	ylim(-2.5, 0.8) +
+
+	# Plot label
+	labs(tag = "D")	
+
+	# Function to fill facet strip labels
+	plot4 <- modify_strip_colors(plot4)
+
+# Include plots in a single grid
+grid.arrange(plot1, plot2, plot3, plot4,ncol=2)
+
+########################################################################################################

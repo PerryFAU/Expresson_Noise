@@ -1,0 +1,84 @@
+# Define conditions
+#conditions <- c("ciprofloxacin", "glucose", "glycerol","lactose", "NaCl", "stationary phase 16h", "stationary phase 30h", "synthetic rich")
+conditions <- c("synthetic rich", "stationary phase 16h", "stationary phase 30h", "glucose", "glycerol", "lactose", "NaCl", "ciprofloxacin")
+
+set.seed(1) 
+
+
+#select_summary = TRUE
+select_summary = FALSE
+
+
+
+# Initialize an empty dataframe to store the results
+Test_Results_df <- data.frame(
+  Condition = character(),
+  SW_Metric = numeric(),
+  SW_Pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+Test_Results_df<-Test_Results_df[0,]
+
+
+if (select_summary)
+{
+  VOEN_DF_Filtered <- sample_n(VOEN_DF, 4999)
+
+
+    model <- lm( log10(expression_noise) ~ expression_level, data = VOEN_DF_Filtered)
+
+
+  # Shapiro-Wilks Test for Normality
+  shapiro_test <- shapiro.test(model$residuals)
+
+  shapiro_test$statistic
+  shapiro_test$p.value
+
+
+  Test_Results_df <- rbind(Test_Results_df, data.frame(Condition = "Summary", SW_Metric = shapiro_test$statistic, SW_Pvalue = shapiro_test$p.value))
+
+} else
+{
+
+
+
+  # Loop over each combination of conditions
+  for (i in 1:(length(conditions) )) 
+  {
+
+    condition1 <- conditions[i]
+
+    VOEN_DF_Filtered <- filter(VOEN_DF, condition == condition1) 
+
+
+      model <- lm(log10(expression_noise) ~ expression_level, data = VOEN_DF_Filtered)
+
+    # Shapiro-Wilks Test for Normality
+    shapiro_test <- shapiro.test(model$residuals)
+
+    shapiro_test$statistic
+    shapiro_test$p.value
+
+
+    Test_Results_df <- rbind(Test_Results_df, data.frame(Condition = condition1, SW_Metric = shapiro_test$statistic, SW_Pvalue = shapiro_test$p.value))
+
+  }
+}
+if (select_summary)
+{ 
+  strSummary = "Summary Level;"
+} else
+{
+  strSummary = "Detailed Level;"
+}
+
+
+  strselect_log="Model: log10(expression_noise) ~ expression_level;"
+
+
+
+cat(strSummary,"\n",strselect_log,"\n","Plot2_Residuals_EL_EN - Shapiro Wilks Tests","\n")
+
+print(Test_Results_df[c("Condition","SW_Metric","SW_Pvalue")])
+###############################################################################################

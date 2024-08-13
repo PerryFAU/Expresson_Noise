@@ -1,0 +1,76 @@
+# Define conditions
+#conditions <- c("ciprofloxacin", "glucose", "glycerol","lactose", "NaCl", "stationary phase 16h", "stationary phase 30h", "synthetic rich")
+conditions <- c("synthetic rich", "stationary phase 16h", "stationary phase 30h", "glucose", "glycerol", "lactose", "NaCl", "ciprofloxacin")
+ 
+#set.seed(0) 
+
+
+#select_summary = TRUE
+select_summary = FALSE
+ 
+# Initialize an empty dataframe to store the results
+Test_Results_df <- data.frame(
+  Condition = character(),
+  WL_Metric = numeric(),
+  WL_Pvalue = numeric(),
+  WN_Metric = numeric(),
+  WN_Pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+Test_Results_df<-Test_Results_df[0,]
+
+if (select_summary)
+{
+  VOEN_DF_Filtered <- sample_n(VOEN_DF, 4999)
+
+  model_L <- lm(expression_level~ reg_inputs, data = VOEN_DF_Filtered)
+  model_N <- lm(log10(expression_noise)~ reg_inputs, data = VOEN_DF_Filtered)
+
+
+  # Shapiro-Wilks Test for Normality
+  shapiro_test_L <- shapiro.test(model_L$residuals)
+  shapiro_test_N <- shapiro.test(model_N$residuals)
+
+  Test_Results_df <- rbind(Test_Results_df, data.frame(Condition = "Summary", WL_Metric = shapiro_test_L$statistic, WL_Pvalue = shapiro_test_L$p.value, WN_Metric = shapiro_test_N$statistic, WN_Pvalue = shapiro_test_N$p.value))
+
+  }else
+  {
+
+    # Loop over each combination of conditions
+    for (i in 1:(length(conditions) )) 
+    {
+      condition1 <- conditions[i]
+      VOEN_DF_Filtered <- filter(VOEN_DF, condition == condition1) 
+
+      model_L <- lm(expression_level~ reg_inputs, data = VOEN_DF_Filtered)
+      model_N <- lm(log10(expression_noise)~ reg_inputs, data = VOEN_DF_Filtered)
+
+      # Shapiro-Wilks Test for Normality
+      shapiro_test_L <- shapiro.test(model_L$residuals)
+      shapiro_test_N <- shapiro.test(model_N$residuals)
+
+      Test_Results_df <- rbind(Test_Results_df, data.frame(Condition = condition1, WL_Metric = shapiro_test_L$statistic, 
+	WL_Pvalue = shapiro_test_L$p.value,WN_Metric = shapiro_test_N$statistic, WN_Pvalue = shapiro_test_N$p.value))
+
+    }
+}
+if (select_summary)
+{ 
+  strSummary = "Summary Level;"
+} else
+{
+  strSummary = "Detailed Level;"
+}
+
+strselect_log="Model: expression_level~ reg_inputs;log10(expression_noise)~ reg_inputs ;"
+
+cat(strSummary,"\n",strselect_log,"\n","Plot3_reg_inputs_EL - Shapiro Wilks Tests","\n")
+
+print(Test_Results_df[c("Condition","WL_Metric","WL_Pvalue")])
+cat("Plot3_reg_inputs_EN - Shapiro Wilks Tests","\n")
+
+print(Test_Results_df[c("Condition","WN_Metric","WN_Pvalue")])
+
+
+###############################################################################################

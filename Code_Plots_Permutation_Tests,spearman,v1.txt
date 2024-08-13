@@ -1,0 +1,361 @@
+
+setwd("/cloud/project/Files")
+
+options(digits = 15)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Define conditions
+#conditions <- c("ciprofloxacin", "glycerol", "glucose", "lactose", "NaCl", "stationary phase 16h", "stationary phase 30h", "synthetic rich")
+
+# Define conditions
+conditions <- c("synthetic rich", "stationary phase 16h", "stationary phase 30h",  
+		"glucose", "glycerol", "lactose", "NaCl", "ciprofloxacin")
+
+sequence <- c(1,2,3,4,5,6,7,8)
+
+condition_seq<- data.frame(conditions,sequence)
+
+
+# Initialize an empty dataframe to store the results
+results_df <- data.frame(
+  Condition1 = character(),
+  Condition2 = character(),
+  Pvalue = numeric(),
+  Adj_Pvalue = numeric(),
+  Condition1Seq = numeric(),
+  Condition2Seq = numeric(),
+  stringsAsFactors = FALSE
+)
+
+
+# Function to return sequence
+returnSequence <- function(condition,condition_seq) {
+
+condition_seqTemp<-   condition_seq
+
+  condition_seq <-  filter(condition_seq, conditions == condition)
+
+
+
+  return(condition_seq$sequence)
+}
+
+returnFinal_DF <- function(results_df) {
+
+#resultsTemp_df <- results_df
+resultsTemp_Final_df <- results_df
+resultsTemp_Final_df<-resultsTemp_Final_df[0,]
+
+# Loop over each combination of conditions
+for (i in 1:(length(conditions) )) {
+    condition1 <- conditions[i]
+
+
+  #resultsTemp_df_filtered <-  filter(resultsTemp_df, Condition1 == conditions[i])
+  resultsTemp_df_filtered <-  filter(results_df, Condition1 == conditions[i])
+  resultsTemp_df_filtered <-  arrange(resultsTemp_df_filtered,Condition1Seq,Condition2Seq)
+
+  resultsTemp_df_filtered$Adj_Pvalue=p.adjust(unlist(resultsTemp_df_filtered$Pvalue),method="bonferroni")
+
+  resultsTemp_Final_df<-rbind ( resultsTemp_Final_df, resultsTemp_df_filtered)
+
+  #print(resultsTemp_df_filtered[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+  #print(resultsTemp_Final_df[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+
+  }
+  return(resultsTemp_Final_df)
+}
+
+
+################################################################################################################################
+################################################################################################################################
+# Function to run permutation tests and return the result
+runPermutation_Tests_EL_EN <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests_Spearman_Plot_1_EL_EN"
+  cat("Running Test:", testName, "\n")
+
+  # Set the number of permutations
+  nperm <- 10000
+
+ #if((condition1 == "ciprofloxacin" && condition2 == "NaCl") ||
+ #   (condition1 == "ciprofloxacin" && condition2 == "stationary phase 16h") ||
+ #   (condition1 == "ciprofloxacin" && condition2 == "synthetic rich") ||
+ #   (condition1 == "glycerol" && condition2 == "glucose") ||
+ #   (condition1 == "glycerol" && condition2 == "lactose") ||
+ #   (condition1 == "glycerol" && condition2 == "NaCl") ||
+ #   (condition1 == "glycerol" && condition2 == "synthetic rich") ||
+ #   (condition1 == "glycerol" && condition2 == "stationary phase 16h"))
+ #   { 
+ #      nperm <- 100000
+#}
+
+
+
+  # Set a vector for the differences of correlations
+  cor.dif <- numeric(nperm)
+
+
+  #cat("structure cor.dif: ",str(cor.dif),"; ",cor.dif)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+  
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+  
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+    #plot1<-ggplot(data = VOEN_DF_Cond, mapping = aes(x = log10(expression_level), y = expression_noise), na.rm = TRUE) +
+    # Calculate the permuted Spearman correlation in the first condition
+    cor.1 <- cor(cond1$expression_level, log10(cond1$expression_noise), method = "spearman",use = "complete.obs")
+  
+    # Calculate the permuted Spearman correlation in the second condition
+    cor.2 <- cor(cond2$expression_level, log10(cond2$expression_noise), method = "spearman",use = "complete.obs")
+  
+    # Store the difference of correlations
+    cor.dif[i] <- abs(cor.1 - cor.2)
+    }
+
+    #cat("cor.dif: ",head(cor.dif,10),"\n")
+
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+    #plot1<-ggplot(data = VOEN_DF_Cond, mapping = aes(x = log10(expression_level), y = expression_noise), na.rm = TRUE) 
+
+emp.cor.dif <- abs(cor(VOEN_DF_filtered$expression_level[VOEN_DF_filtered$condition == condition1], 
+                   log10(VOEN_DF_filtered$expression_noise[VOEN_DF_filtered$condition == condition1]), 
+                   method = "spearman",use = "complete.obs") - 
+                cor(VOEN_DF_filtered$expression_level[VOEN_DF_filtered$condition == condition2], 
+                   log10(VOEN_DF_filtered$expression_noise[VOEN_DF_filtered$condition ==condition2]), 
+                   method = "spearman",use = "complete.obs"))
+
+  cat("Running [EL-EN] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+
+  # compute the Monte Carlo approximation of the permutation p-value
+  # This is for a 2 tailed binomial distribution
+  #result = 2*min(mean(cor.dif>emp.cor.dif), mean(cor.dif<emp.cor.dif))
+  # Single tail distribution
+  result = mean(cor.dif>emp.cor.dif)
+
+
+#========================================================================================
+  # Plot the distribution
+  file_name =  paste("Plot1, Exp_Level-Exp_Noise, Spearman_Test - ", condition1, " and ",condition2,".jpeg")
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot1, Exp_Level-Exp_Noise, Spearman_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(cor.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.cor.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+
+
+  return(result)
+}
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# Function to run permutation tests and return the result
+runPermutation_Tests_RI_EL <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests__Spearman_Plot_2_RI_EL"
+  cat("Running Test:", testName, "\n")
+
+  # Set the number of permutations
+  nperm <- 10000
+
+
+  # Set a vector for the differences of correlations
+  cor.dif <- numeric(nperm)
+
+  VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF, reg_inputs != 0)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF_TEMP_NoOnes, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+  
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+  
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+    # plot1<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_level)), na.rm = TRUE) +
+    # Calculate the permuted Spearman correlation in the first condition
+    cor.1 <- cor(cond1$reg_inputs, cond1$expression_level, method = "spearman",use = "complete.obs")
+  
+    # Calculate the permuted Spearman correlation in the second condition
+    cor.2 <- cor(cond2$reg_inputs, cond2$expression_level, method = "spearman",use = "complete.obs")
+  
+    # Store the difference of correlations
+    cor.dif[i] <- abs(cor.1 - cor.2)
+    }
+
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+  # plot1<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_level)), na.rm = TRUE) +
+  emp.cor.dif <- abs(cor(VOEN_DF_filtered$reg_inputs[VOEN_DF_filtered$condition == condition1], 
+                   VOEN_DF_filtered$expression_level[VOEN_DF_filtered$condition == condition1], 
+                   method = "spearman",use = "complete.obs") - 
+                cor(VOEN_DF_filtered$reg_inputs[VOEN_DF_filtered$condition == condition2], 
+                   VOEN_DF_filtered$expression_level[VOEN_DF_filtered$condition ==condition2], 
+                   method = "spearman",use = "complete.obs"))
+
+
+
+
+  cat("Running [RI-EL] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+  result = mean(cor.dif>emp.cor.dif)
+
+
+#========================================================================================
+  #png("foobar.png",1200,800)
+  file_name =  paste("Plot2, Reg_Input-Exp_Level, Spearman_Test - ", condition1, " and ",condition2,".jpeg")
+
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot2, Reg_Input-Exp_Level, Spearman_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(cor.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.cor.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+
+
+
+  return(result)
+}
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# Function to run permutation tests and return the result
+runPermutation_Tests_RI_EN <- function(condition1, condition2) {
+
+  testName = "Permutation_Tests_Spearman_Plot_2_RI_EN"
+  cat("Running Test:", testName, "\n")
+
+
+  # Set the number of permutations
+  nperm <- 10000
+
+
+  # Set a vector for the differences of correlations
+  cor.dif <- numeric(nperm)
+
+  VOEN_DF_TEMP_NoOnes <- filter(VOEN_DF, reg_inputs != 0)
+
+  # Filter data for the conditions of interest
+  conditions_of_interest <- c(condition1, condition2)
+  VOEN_DF_filtered <- subset(VOEN_DF_TEMP_NoOnes, condition %in% conditions_of_interest)
+
+  # Start permutations
+  for (i in 1:nperm) {
+    # Sample an index
+    idx <- sample(nrow(VOEN_DF_filtered), nrow(VOEN_DF_filtered) / 2, replace = FALSE)
+  
+    # Split the data into two conditions
+    cond1 <- VOEN_DF_filtered[idx, ]
+    cond2 <- VOEN_DF_filtered[-idx, ]
+  
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+    # plot2<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_noise)), na.rm = TRUE) +
+    # Calculate the permuted Spearman correlation in the first condition
+    cor.1 <- cor(cond1$reg_inputs, log10(cond1$expression_noise), method = "spearman",use = "complete.obs")
+  
+    # Calculate the permuted Spearman correlation in the second condition
+    cor.2 <- cor(cond2$reg_inputs, log10(cond2$expression_noise), method = "spearman",use = "complete.obs")
+  
+    # Store the difference of correlations
+    cor.dif[i] <- abs(cor.1 - cor.2)
+    }
+
+    # Model from the figure, note that this model will only have the log10 value of expression_noise
+  # plot2<-ggplot(data = VOEN_DF_TEMP_NoOnes,mapping = aes(x = reg_inputs, y = log10(expression_noise)), na.rm = TRUE) +
+  emp.cor.dif <- abs(cor(VOEN_DF_filtered$reg_inputs[VOEN_DF_filtered$condition == condition1], 
+                   log10(VOEN_DF_filtered$expression_noise[VOEN_DF_filtered$condition == condition1]), 
+                   method = "spearman",use = "complete.obs") - 
+                cor(VOEN_DF_filtered$reg_inputs[VOEN_DF_filtered$condition == condition2], 
+                   log10(VOEN_DF_filtered$expression_noise[VOEN_DF_filtered$condition ==condition2]), 
+                   method = "spearman",use = "complete.obs"))
+
+  cat("Running [RI-EN] permutation tests for conditions:", condition1, "and", condition2, "\n")
+
+  # compute the Monte Carlo approximation of the permutation p-value
+  #result = 2*min(mean(cor.dif>emp.cor.dif), mean(cor.dif<emp.cor.dif))
+  result = mean(cor.dif>emp.cor.dif)
+
+
+#========================================================================================
+  #png("foobar.png",1200,800)
+  file_name =  paste("Plot2, Reg_Input-Exp_Noise, Spearman_Test - ", condition1, " and ",condition2,".jpeg")
+
+
+  jpeg(file_name,1200,800, quality = 100)
+
+  # Plot the permutation distribution
+  titlecat = paste("Plot2, Reg_Input-Exp_Noise, Spearman_Test - ","Permutation Distribution - ", condition1, " and ",condition2)
+
+  hist(cor.dif, main = titlecat, xlab = "Difference in White Test", breaks = 100)
+  abline(v = emp.cor.dif,col="red")
+
+  dev.off()
+#========================================================================================
+
+  return(result)
+}
+
+
+
+################################################################################################################################
+################################################################################################################################
+
+
+
+# Loop over each combination of conditions
+for (i in 1:(length(conditions) - 1)) {
+  for (j in (i + 1):length(conditions)) {
+    condition1 <- conditions[i]
+    condition2 <- conditions[j]
+ 
+    result <- runPermutation_Tests_EL_EN(condition1, condition2)
+    #result <- runPermutation_Tests_RI_EL(condition1, condition2)
+    #result <- runPermutation_Tests_RI_EN(condition1, condition2)
+
+    # Add the result to the dataframe
+    results_df <- rbind(results_df, data.frame(Condition1 = condition1, Condition2 = condition2, Pvalue = result, Condition1Seq = returnSequence(condition1,condition_seq), Condition2Seq = returnSequence(condition2,condition_seq)))
+
+    results_df <- rbind(results_df, data.frame(Condition1 = condition2, Condition2 = condition1, Pvalue = result, Condition1Seq = returnSequence(condition2,condition_seq), Condition2Seq = returnSequence(condition1,condition_seq)))
+
+  }
+}
+
+# Print the results dataframe
+
+resultsTemp_Final_df <- returnFinal_DF(results_df)
+
+print(resultsTemp_Final_df[c("Condition1","Condition2","Pvalue","Adj_Pvalue")])
+
+
+
+setwd("/cloud/project")

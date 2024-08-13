@@ -1,0 +1,356 @@
+
+# Figure S1
+############################################## Essentiality ############################################
+########################################################################################################
+
+# plot_Boxplot_comb_19_20_[1]reg_inputs_[2]Essential
+
+# Combined code 29, 30
+# Data: Essential_All_DF_Extended_NA_to_Zero
+# Data set: Essential_All_DF_Extended_NA_to_Zero; Attribute for Sort: Essential_Level_Cond
+
+
+# Map Essential values to TRUE or FALSE
+Essential_All_DF_Extended_NA_to_Zero <- Essential_All_DF_Extended
+Essential_All_DF_Extended_NA_to_Zero$Essential <- ifelse(is.na(Essential_All_DF_Extended_NA_to_Zero$Essential) , FALSE, TRUE)
+
+Essential_All_DF_Extended_NA_to_Zero <- filter(Essential_All_DF_Extended_NA_to_Zero, reg_inputs != 0)
+
+Essential_All_DF_Extended_NA_to_Zero_eTRUE  <- filter(Essential_All_DF_Extended_NA_to_Zero, Essential == TRUE)
+Essential_All_DF_Extended_NA_to_Zero_eFALSE  <- filter(Essential_All_DF_Extended_NA_to_Zero, Essential == FALSE)
+
+
+# Variables to persist boxplot fill colors
+level_Color =adjustcolor( "cornflowerblue", alpha.f = 0.3)
+noise_color = adjustcolor( "firebrick1", alpha.f = 0.3)
+
+#--------------------------------------------------------------------------------------------------
+
+# Overall plot, expression level
+plot1<-ggplot(data = Essential_All_DF_Extended_NA_to_Zero, aes( x =  Essential, y = reg_inputs,  fill = Essential))+ 
+
+	geom_boxplot(notch=TRUE,  aes(group=Essential),outlier.shape = NA) +
+
+
+	# x and y axis labels
+	scale_x_discrete(labels = c("Nonessential","Essential"), breaks = c("FALSE","TRUE")) + 
+	scale_fill_manual(values=c(level_Color, noise_color)) +
+
+	labs(x = NULL) +
+	ylab(~"number of regulatory inputs") +
+
+
+	scale_y_continuous(breaks=c(0,2,4,6), limits = c(0, 6.5)) +
+
+	# Print brackets between the boxplots
+	geom_bracket(data = Essential_All_DF_Extended_NA_to_Zero,xmin = "FALSE", xmax ="TRUE", y.position = 6.3, 
+		label = "***", tip.length = 0.01, color = "black") +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+
+	# Remove legends
+	theme(legend.position = "none") +
+
+	theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"))
+
+# Include plots in a single grid
+grid.arrange(plot1,ncol=1)
+########################################################################################################
+
+
+
+
+# Figure S2
+################################# Expression Noise vs Expression Level #################################
+########################################################################################################
+# Combined code 7, 8
+# Data: VOEN_DF
+
+
+# *P<0.05, **P<0.01, ***P<0.001, NS - nonsignificant
+
+# Labels for SW test
+W_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("W","W","W","W","W","W","W","W"))
+
+SW_ELevel_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.94***","= 0.89***","= 0.94***","= 0.96***","= 0.96***","= 0.97***","= 0.98***","= 0.95***"))
+
+#--------------------------------------------------------------------------------------------------
+# Prepare residuals
+# Copy data frame to incorporate residuals
+VOEN_DF_Cond_Res <- VOEN_DF_Cond
+
+# Create model for residuals
+model <- lm( log10(expression_noise) ~ expression_level, data = VOEN_DF_Cond_Res)
+
+# Add residuals
+VOEN_DF_Cond_Res<-add_residuals (VOEN_DF_Cond_Res, model)
+
+# Residuals calculated as function of log, therefore rescale for comparison to other variables
+#VOEN_DF_Cond_Res$resid_exp <- 10^(VOEN_DF_Cond_Res$resid)
+VOEN_DF_Cond_Res$resid_exp <- exp(VOEN_DF_Cond_Res$resid)
+
+#--------------------------------------------------------------------------------------------------
+# plot_histogram_comb_7_8_[1]expression_level_Residuals_[2]facet_wrap_conditions
+# Data set: VOEN_DF_Cond; Attribute for Sort: Level_Noise_Cond
+# Overall plot	
+
+plot1<-ggplot(data = VOEN_DF_Cond_Res, mapping = aes(y= resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.1)  +
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+	# x and y axis labels
+	xlab("frequency") + 
+	ylab(~"residuals of model") +
+
+	# Print out Wilcox statistics
+  	annotate("text", x=650,  y= -4, cex=4.0, label= "W",hjust = 0, fontface="italic") +
+  	annotate("text", x=650,  y= -3.70, cex=4.0, label= " = 0.96***",hjust = 0) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Plot reference
+	labs(tag = "A")		
+
+
+# Faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot2<-ggplot(data = VOEN_DF_Cond_Res,mapping = aes(y = resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.1)  +
+
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+	# x and y axis labels
+	xlab("frequency") + 
+	ylab(~"residuals of model") +
+
+	# Print out Wilcox statistics
+  	geom_text(x = 115, y = -4.5, cex=2.5, aes(label = label), data = W_ELevel_labels,hjust = 0, fontface="italic") +
+  	geom_text(x = 115, y = -3.6, cex=2.5, aes(label = label), data = SW_ELevel_labels,hjust = 0) +
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller(Level_Noise_Cond=c(new_labels ))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# This theme for the facet strip labels must follow bw so that they are not removed from bw
+	theme(strip.text = element_text(face = "bold",size = 8.0), strip.background = element_rect(fill = NA, color = "black")) +
+
+	# Plot label
+	labs(tag = "B")	
+
+	# Function to fill facet strip labels
+	plot2 <- modify_strip_colors(plot2)
+
+# Include plots in a single grid
+grid.arrange(plot1, plot2, ncol=2)
+########################################################################################################
+
+
+
+# Figure S3
+########################################### Regulatory Inputs ##########################################
+########################################################################################################
+# Combined code 9, 10
+# Data: VOEN_DF
+
+# A data frame with labels for each facet
+## Expression_Level
+# Wilcox Tests
+SW_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("W","W","W","W","W","W","W","W"))
+
+#SW_ELevel_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.95***","= 0.94***","= 0.96***","= 0.95***","= 0.95***","= 0.95***","= 0.96***","= 0.90***"))
+
+SW_ELevel_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.92***","= 0.90***","= 0.94***","= 0.92***","= 0.92***","= 0.93***","= 0.93***","= 0.86***"))
+
+
+## Expression_Noise
+# Wilcox Tests
+SW_ENoise_RInput_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), label = c("= 0.93***","= 0.88***","= 0.93***","= 0.96***","= 0.95***","= 0.97***","= 0.97***","= 0.95***"))
+
+
+# Labels to print out " >10" at bottom of chart
+bottom_labels <- data.frame(Level_Noise_Cond = c("h", "d", "e","f","g","b","c","a"), 
+	label = c(" >10",""," >10"," >10"," >10","","",""))
+#--------------------------------------------------------------------------------------------------
+# plot_histogram_comb_9_10_[1]residuals_EL_reg_inputs__[2]residuals_EN__reg_inputsf_wrap_cond
+
+# Create a temporary data frame 
+VOEN_DF_TEMP <- VOEN_DF_Cond
+# Data set: VOEN_DF_Cond; Attribute for Sort: Level_Noise_Cond
+
+# Move all points > 10 to position 11 and note below with labels
+VOEN_DF_TEMP$reg_inputs[VOEN_DF_TEMP$reg_inputs > 10] <- 11
+
+#--------------------------------------------------------------------------------------------------
+# Prepare residuals for Expression Level and reg_inputs
+# Copy data frame to incorporate residuals
+VOEN_DF_TEMP_Res_EL <- VOEN_DF_TEMP
+
+# Create model for residuals
+model_EL <- lm(expression_level~ reg_inputs, data = VOEN_DF_TEMP_Res_EL)
+#model_EL <- lm(log10(expression_level)~ reg_inputs, data = VOEN_DF_TEMP_Res_EL)
+
+# Add residuals
+VOEN_DF_TEMP_Res_EL<-add_residuals (VOEN_DF_TEMP_Res_EL, model_EL)
+
+# Residuals calculated as function of log, therefore rescale for comparison to other variables
+#VOEN_DF_TEMP_Res_EL$resid_exp <- exp(VOEN_DF_TEMP_Res_EL$resid)
+VOEN_DF_TEMP_Res_EL$resid_exp <- 10^(VOEN_DF_TEMP_Res_EL$resid)
+#--------------------------------------------------------------------------------------------------
+# Prepare residuals for Expression Noise and reg_inputs
+# Copy data frame to incorporate residuals
+VOEN_DF_TEMP_Res_EN <- VOEN_DF_TEMP
+
+# Create model for residuals
+#model_EN <- lm(expression_noise~ reg_inputs, data = VOEN_DF_TEMP_Res_EN)
+model_EN <- lm(log10(expression_noise) ~ reg_inputs, data = VOEN_DF_TEMP_Res_EN)
+
+# Add residuals
+VOEN_DF_TEMP_Res_EN<-add_residuals (VOEN_DF_TEMP_Res_EN, model_EN)
+
+# Residuals calculated as function of log, therefore rescale for comparison to other variables
+#VOEN_DF_TEMP_Res_EN$resid_exp <- exp(VOEN_DF_TEMP_Res_EN$resid)
+VOEN_DF_TEMP_Res_EN$resid_exp <- 10^(VOEN_DF_TEMP_Res_EN$resid)
+
+#--------------------------------------------------------------------------------------------------
+# Overall plot, expression level
+plot1<-ggplot(data = VOEN_DF_TEMP_Res_EL,mapping = aes(y = resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.001)  +
+
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+	# x and y axis labels
+	xlab(expression(~"frequency")) + 
+	ylab(~"residuals of model") +
+
+	# Print out Wilcox Test statistics
+	annotate("text", x=9,  y=3.0, cex=3.0, label= "W",hjust = 0, fontface="italic") +
+	annotate("text", x=9,  y=3.20, cex=3.0, label= "= 0.93***",hjust = 0) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Plot reference
+	labs(tag = "A")	
+
+
+# Overall plot, expression noise
+plot2<-ggplot(data = VOEN_DF_TEMP_Res_EN,mapping = aes(y = resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.01)  +
+
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+	# x and y axis labels
+	xlab(expression(~"frequency")) + 
+	ylab(~"residuals of model") +
+
+	# Print out White Test statistics
+	annotate("text", x=72,  y=-4.2, cex=3.0, label= "W",hjust = 0, fontface="italic") +
+	annotate("text", x=72,  y=-4.0, cex=3.0, label= "= 0.97***",hjust = 0) +
+
+	# Set overall plot them to black and white
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Plot reference
+	labs(tag = "B")	
+
+
+# Expression level, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot3<-ggplot(data = VOEN_DF_TEMP_Res_EL,mapping = aes(y = resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.001)  +
+
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+
+	# x and y axis labels
+	xlab(expression(~"frequency")) + 
+	ylab(~"residuals of model") +
+
+	# Print out White Test statistics
+	geom_text(x = 4, y = 1.38, cex=2.0, aes(label = label), data = SW_RInput_labels,hjust = 0, fontface="italic") +
+	geom_text(x = 4, y = 2.00, cex=2.0, aes(label = label), data = SW_ELevel_RInput_labels,hjust = 0, fontface="plain") +
+ 
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller(Level_Noise_Cond=c(new_labels ))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+
+	# Plat label
+	labs(tag = "C")	
+
+	# Function to fill facet strip labels
+	plot3 <- modify_strip_colors(plot3)
+
+# Expression noise, faceted plots by conditions, facets were created on an attribute to order facet conditions by 
+  # three non-competitive (synthetic rich, stationary phase 16h, stationary phase 30h)
+  # three competitive (glucose, glycerol, lactose), and 
+  # two stress (osmotic - NaCl, antibiotic - ciprofloxacin) environments
+plot4<-ggplot(data = VOEN_DF_TEMP_Res_EN,mapping = aes(y = resid), na.rm = TRUE) +
+
+	geom_histogram(color="gray30",fill="gray70",binwidth=0.01)  +
+
+	coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+
+	# x and y axis labels
+	xlab(expression(~"frequency")) + 
+	ylab(~"residuals of model") +
+
+	# Print out White Test statistics
+	geom_text(x = 16.5, y = -3.85, cex=2.0, aes(label = label), data = SW_RInput_labels,hjust = 0, fontface="italic") +
+	geom_text(x = 16.5, y = -3.2, cex=2.0, aes(label = label), data = SW_ENoise_RInput_labels,hjust = 0, fontface="plain") +
+
+	# Create ordered facets with labels
+	  # new_labels array provides labels to match ordering of facets
+	facet_wrap(~ Level_Noise_Cond, nrow = 2,labeller = labeller( Level_Noise_Cond=c(new_labels ))) +
+
+	# Set overall default theme
+	theme_bw() +
+
+	# Remove grid lines
+	theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+
+	# Plot label
+	labs(tag = "D")	
+
+	# Function to fill facet strip labels
+	plot4 <- modify_strip_colors(plot4)
+
+
+# Include plots in a single grid
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2)

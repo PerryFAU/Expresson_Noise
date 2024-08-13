@@ -1,0 +1,69 @@
+# Define conditions
+#conditions <- c("ciprofloxacin", "glucose", "glycerol","lactose", "NaCl", "stationary phase 16h", "stationary phase 30h", "synthetic rich")
+conditions <- c("synthetic rich", "stationary phase 16h", "stationary phase 30h", "glucose", "glycerol", "lactose", "NaCl", "ciprofloxacin")
+
+#select_summary = TRUE
+select_summary = FALSE
+
+
+# Initialize an empty dataframe to store the results
+Test_Results_df <- data.frame(
+  Condition = character(),
+  P_Metric = numeric(),
+  P_Pvalue = numeric(),
+  W_Metric = numeric(),
+  W_Pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+Test_Results_df<-Test_Results_df[0,]
+
+# Loop over each combination of conditions
+for (i in 1:(length(conditions) )) 
+  {
+    condition1 <- conditions[i]
+
+    if (select_summary)
+    {
+      VOEN_DF_Filtered <- VOEN_DF 
+    }
+    else
+    {
+      VOEN_DF_Filtered <- filter(VOEN_DF, condition == condition1) 
+    }
+
+      cor.s <- cor(VOEN_DF_Filtered$expression_level, log10(VOEN_DF_Filtered$expression_noise), method = "spearman",use = "complete.obs")
+      cor.p <- cor.test(formula = ~ expression_level + log10(expression_noise), data = VOEN_DF_Filtered, method = "spearman")$p.value
+
+ 
+    # Perform the White test on the first condition
+      model1 <- lm(log10(expression_noise) ~ expression_level, data = VOEN_DF_Filtered)
+
+    white_test_s <- white_test(model1)$w_stat
+    white_test_p <- white_test(model1)$p_value
+
+    Test_Results_df <- rbind(Test_Results_df, data.frame(Condition = condition1, M_Metric = cor.s, M_Pvalue = cor.p, W_Metric = white_test_s, W_Pvalue = white_test_p))
+
+  }
+
+
+    if (select_summary)
+    { 
+      strSummary = "Summary Level;"
+    } else
+    {
+      strSummary = "Detailed Level;"
+    }
+
+
+      strselect_log="Model: formula = ~ expression_level + log10(expression_noise);"
+
+
+
+  cat(strSummary,"\n",strselect_log,"\n","Plot1_EL_EN - Spearman, White Tests","\n")
+
+  print(Test_Results_df[c("Condition","M_Metric","M_Pvalue")])
+  print(Test_Results_df[c("Condition","W_Metric","W_Pvalue")])
+
+
+###############################################################################################
