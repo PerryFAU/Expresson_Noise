@@ -31,7 +31,12 @@ Base Figures
    Line 342 - #result <- runPermutation_Tests_RI_EL(condition1, condition2)
    Line 343 - #result <- runPermutation_Tests_RI_EN(condition1, condition2)
 
-9. Code_Plots_Permutation_Tests,white_tests,v1.txt
+9. Code_Plots_Permutation_Tests,white_tests,v1.txt - TBD
+
+    Line 333 - result <- runPermutation_Tests_EL_EN(condition1, condition2)
+    Line 334 - #result <- runPermutation_Tests_RI_EL(condition1, condition2)
+    Line 335 - #result <- runPermutation_Tests_RI_EN(condition1, condition2)
+
 
 Supplemental Figures
 1. Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt
