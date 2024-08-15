@@ -23,15 +23,15 @@ Base Figures
 4. Code_Plots_Final_Combined,v1,Spearman,White Tests, Plot2_RI_EN.txt - Generates the Spearman correlation coefficients and White test statistics for the conditions in plot 2 (figure 2.)  The model is based upon
    the relationship of regulatory inputs to expression noise.
 5. Code_Plots_Final_Combined,v1,Wilcox Tests, Plot3_Essential.txt - Generates the Wilcox test statistics to compare the essential and nonessential boxplots.
-6. Code_Plots_Final_Combined,v1.txt - This files contains the three (3) scripts to generate figures 1, 2, and 3. Each of the individual plots should be run separately with the resulting image available in the
+6. Code_Plots_Final_Combined,v1.txt - This file contains the three (3) scripts to generate figures 1, 2, and 3. Each of the individual plots should be run separately with the resulting image available in the
    "Plots" region of the R console.
-8. Code_Plots_Permutation_Tests,spearman,v1.txt - TBD
+8. Code_Plots_Permutation_Tests,spearman,v1.txt - Generates the permuted Spearman correlation tests for three (3) different models.  These models correspond to Figure 1 (log10(expression noise) ~ expression level, Figure 2 (expression level ~ regulatory inputs) and Figure 2 (log10(expression noise) ~ regulatory inputs).  The environment processing and additional functions are created from the script for each model.  To run the specific model, "uncomment" the paticular test at lines 341 - 343 (see below).
 
    Line 341 - result <- runPermutation_Tests_EL_EN(condition1, condition2)
    Line 342 - #result <- runPermutation_Tests_RI_EL(condition1, condition2)
    Line 343 - #result <- runPermutation_Tests_RI_EN(condition1, condition2)
 
-9. Code_Plots_Permutation_Tests,white_tests,v1.txt - TBD
+9. Code_Plots_Permutation_Tests,white_tests,v1.txt - Generates the permuted White tests for three (3) different models.  These models correspond to Figure 1 (log10(expression noise) ~ expression level, Figure 2 (expression level ~ regulatory inputs) and Figure 2 (log10(expression noise) ~ regulatory inputs).  The environment processing and additional functions are created from the script for each model.  To run the specific model, "uncomment" the paticular test at lines 333 - 335 (see below).
 
     Line 333 - result <- runPermutation_Tests_EL_EN(condition1, condition2)
     Line 334 - #result <- runPermutation_Tests_RI_EL(condition1, condition2)
