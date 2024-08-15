@@ -39,7 +39,8 @@ Base Figures
 
 
 Supplemental Figures
-1. Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt
-2. Code_Plots_Supplemental,v1,Shapiro_Wilks_Test, Plot2.txt
-3. Code_Plots_Supplemental,v1,Wilcox_Test,Reg_Inputs_Essential Plot1.txt
-4. Code_Plots_Supplemental.txt
+1. Code_Plots_Final_Combined,v1,EL,Shapiro_Wilks_Test, Plot3.txt - Generates the Shapiro Wilk test for two (2) different models.  These models  correspond to Figure S3 (expression level ~ regulatory inputs) and Figure S3 (log10(expression noise) ~ regulatory inputs).
+2. Code_Plots_Supplemental,v1,Shapiro_Wilks_Test, Plot2.txt - - Generates the Shapiro Wilk test for two (2) different models.  These models  correspond to Figure S2 (log10(expression noise) ~ expression level) and Figure S2 (log10(expression noise) ~ regulatory inputs).
+3. Code_Plots_Supplemental,v1,Wilcox_Test,Reg_Inputs_Essential Plot1.txt - - Generates the Shapiro Wilk test for a single model.  The model corresponds to Figure S1 (reg_inputs ~ Essential).
+4. Code_Plots_Supplemental.txt - This file contains the three (3) scripts to generate figures S1, S2, and S3. Each of the individual plots should be run separately with the resulting image available in the
+   "Plots" region of the R console.
